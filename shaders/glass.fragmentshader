@@ -4,6 +4,9 @@ uniform sampler2D uTexture;
 void main() {
   vec2 uv = gl_FragCoord.xy / winResolution.xy;
   vec4 color = texture2D(uTexture, uv);
+
+  // convert from linear to sRGB
+  color.rgb = pow(color.rgb, vec3(1.0/2.2));
   
-  gl_FragColor = color;
+  gl_FragColor = vec4(color.rgb, 1.0);
 }

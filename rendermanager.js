@@ -23,6 +23,13 @@ export class RenderManager {
             this._OnWindowResize();
         }, false);
 
+        // -------------- FBO --------------
+        this.FBO = new THREE.WebGLRenderTarget(
+            window.innerWidth,
+            window.innerHeight,
+            { samples: 4 }
+        );
+
         // -------------- Shaders --------------
         this.GlassVertexShader = await this._loadFile("shaders/glass.vertexshader");
         this.GlassFragmentShader = await this._loadFile("shaders/glass.fragmentshader");
@@ -85,18 +92,24 @@ export class RenderManager {
     _AddSceneObjects(){
         const geometry = new THREE.SphereGeometry( 1, 32, 32);
         const material = new THREE.MeshStandardMaterial( { color: "#00ff00" } );
-        // const GlassMaterial = new THREE.ShaderMaterial( {
-        // 	uniforms: {
-        // 		time: { value: 1.0 },
-        // 		resolution: { value: new THREE.Vector2() }
-        // 	},
-        // 	vertexShader: document.getElementById( 'vertexShader' ).textContent,
-        // 	fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-        // } );
+        this.uniforms = {
+            uTexture: { value: null },
+            winResolution: {
+                value: new THREE.Vector2(
+                    window.innerWidth,
+                    window.innerHeight
+                ).multiplyScalar(Math.min(window.devicePixelRatio, 2))
+            }
+        };
+        const GlassMaterial = new THREE.ShaderMaterial( {
+        	uniforms: this.uniforms,
+        	vertexShader: this.GlassVertexShader,
+        	fragmentShader: this.GlassFragmentShader
+        } );
 
-        const cube = new THREE.Mesh( geometry, material );
-        cube.castShadow = true;
-        this._scene.add( cube );
+        this.sphere = new THREE.Mesh( geometry, GlassMaterial );
+        this.sphere.castShadow = true;
+        this._scene.add( this.sphere );
 
         const plane = new THREE.Mesh(
             new THREE.PlaneGeometry(10, 10),
@@ -129,10 +142,30 @@ export class RenderManager {
 
     _Animate() {
         requestAnimationFrame(() => {
+            // --- STEP 1: Hide the mesh so it doesn't render into the FBO ---
+            this.sphere.visible = false;
+
+            // --- STEP 2: Render the scene into the off-screen framebuffer (FBO) ---
+            this.renderer.setRenderTarget(this.FBO);
             this.renderer.render(this._scene, this.camera);
+
+            // --- STEP 3: Pass the FBO texture into the shader uniform ---
+            this.uniforms.uTexture.value = this.FBO.texture;
+
+            // --- STEP 4: Reset render target back to default (screen) ---
+            this.renderer.setRenderTarget(null);
+
+            // --- STEP 5: Show the mesh again ---
+            this.sphere.visible = true;
+
+            // --- STEP 6: Render the full scene normally ---
+            this.renderer.render(this._scene, this.camera);
+
+            // Loop
             this._Animate();
         });
     }
+
 
     _loadFile(filePath) {
         return new Promise((resolve) => {
