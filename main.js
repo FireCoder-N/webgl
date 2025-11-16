@@ -10,8 +10,8 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 // ===================  Shaders ===================
-const GlassVertexShader = await loadFile("shaders/glass.vertexshader");
-console.log(GlassVertexShader);
+// const GlassVertexShader = await loadFile("shaders/glass.vertexshader");
+// console.log(GlassVertexShader);
 
 
 // ===================  Scene =================== 
