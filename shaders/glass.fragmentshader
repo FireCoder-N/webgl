@@ -4,22 +4,6 @@ uniform sampler2D uTexture;
 varying vec3 worldNormal;
 varying vec3 eyeVector;
 
-// void main() {
-//   float iorRatio = 1.0/1.31;
-//   vec2 uv = gl_FragCoord.xy / winResolution.xy;
-//   vec4 color = texture2D(uTexture, uv);
-
-//   // convert from linear to sRGB
-//   color.rgb = pow(color.rgb, vec3(1.0/2.2));
-  
-//   gl_FragColor = vec4(color.rgb, 1.0);
-
-//   vec3 normal = worldNormal;
-//   vec3 refractVec = refract(eyeVector, normal, iorRatio);
-  
-//   vec4 color = texture2D(uTexture, uv + refractVec.xy);
-// }
-
 void main() {
   float iorRatio = 1.0/1.31;
   vec2 uv = gl_FragCoord.xy / winResolution.xy;
