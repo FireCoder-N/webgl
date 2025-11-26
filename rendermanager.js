@@ -99,6 +99,9 @@ export class RenderManager {
                     window.innerWidth,
                     window.innerHeight
                 ).multiplyScalar(Math.min(window.devicePixelRatio, 2))
+            },
+            uIor: {
+                value: new THREE.Vector3(1.15, 1.18, 1.22)
             }
         };
         const GlassMaterial = new THREE.ShaderMaterial( {
@@ -119,6 +122,10 @@ export class RenderManager {
         plane.position.y = -1;
         plane.receiveShadow = true;
         this._scene.add(plane);
+    }
+
+    _AddMesh(path){
+        
     }
 
     _SetBgCubemap(){
