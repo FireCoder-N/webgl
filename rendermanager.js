@@ -1,6 +1,7 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
-import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
+import { OrbitControls } from "jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "jsm/loaders/GLTFLoader.js";
 
 
 export class RenderManager {
@@ -122,11 +123,50 @@ export class RenderManager {
         plane.position.y = -1;
         plane.receiveShadow = true;
         this._scene.add(plane);
+
+        this._AddMesh("public/valley/", new THREE.Vector3(0,0,0), new THREE.Vector3(0.015, 0.02, 0.01));
     }
 
-    _AddMesh(path){
-        
+    _AddMesh(path, position, scale) {
+        const loader = new GLTFLoader().setPath(path);
+
+        loader.load("scene.gltf", (gltf) => {
+            const model = gltf.scene;
+
+            // Traverse all children of the GLTF scene
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    // Ensure the material is a valid THREE.Material
+                    if (!(child.material instanceof THREE.Material)) {
+                        console.warn("Invalid material found on mesh:", child.name);
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: 0xcccccc
+                        });
+                    }
+
+                    // Enable shadows
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+
+            // Position the model in the scene
+            model.position.copy(position);
+            model.scale.copy(scale);
+
+            // Add the model to your scene
+            this._scene.add(model);
+
+            console.log("GLTF model successfully added:", model);
+        },
+        (xhr) => {
+            console.log((xhr.loaded / xhr.total * 100) + "% loaded");
+        },
+        (error) => {
+            console.error("Error loading GLTF:", error);
+        });
     }
+
 
     _SetBgCubemap(){
         const loader = new THREE.CubeTextureLoader();
